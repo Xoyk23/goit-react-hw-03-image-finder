@@ -9,7 +9,9 @@ import axios from 'axios';
 import { getImages } from '../services/pixabayApi';
 import Searchbar from './Searchbar';
 import ImageGallery from './ImageGallery';
+import Button from './Button';
 
+import LoaderSpinner from './Loader';
 class App extends Component {
   state = {
     searchQuery: '',
@@ -88,6 +90,8 @@ class App extends Component {
   //     });
   // };
 
+  onClick = () => {};
+
   render() {
     const {
       searchQuery,
@@ -97,22 +101,17 @@ class App extends Component {
       largeSrc,
     } = this.state;
 
+    const showLoadMoreButton = imageArray.length > 0 && !loading;
+
     return (
       <>
         <Searchbar onSubmit={this.updateQuery} />
-        {loading && (
-          <Loader
-            className="Loader"
-            type="Oval"
-            color="#00BFFF"
-            height={80}
-            width={80}
-          />
-        )}
+        {loading && <LoaderSpinner />}
         <ImageGallery
           images={this.state.imageArray}
           query={this.state.searchQuery}
         />
+        {showLoadMoreButton && <Button onClick={this.fetchImages} />}
       </>
     );
   }
