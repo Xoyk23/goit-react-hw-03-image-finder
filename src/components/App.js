@@ -2,14 +2,12 @@ import { Component } from 'react';
 
 import './App.css';
 
-import Loader from 'react-loader-spinner';
-
 import axios from 'axios';
 
-import { getImages } from '../services/pixabayApi';
 import Searchbar from './Searchbar';
 import ImageGallery from './ImageGallery';
 import Button from './Button';
+import Modal from './Modal';
 
 import LoaderSpinner from './Loader';
 class App extends Component {
@@ -32,19 +30,6 @@ class App extends Component {
   updateQuery = query => {
     this.setState({ searchQuery: query, page: 1, imageArray: [] });
   };
-
-  // fetchImages = () => {
-  //   this.setState({ loading: true });
-  //   const { searchQuery, page } = this.state;
-
-  //   getImages(searchQuery, page)
-  //     .then(images => {
-  //       this.setState(prevState => ({
-  //         imageArray: [...prevState.imageArray, ...images],
-  //       }));
-  //     })
-  //     .finally(this.setState({ loading: false }));
-  // };
 
   scrollTo = () => {
     window.scrollTo({
@@ -92,6 +77,38 @@ class App extends Component {
 
   onClick = () => {};
 
+  // showModal = e => {
+  //   console.log(e.target.attributes);
+  //   if (e.target.nodeName !== 'IMG') {
+  //     return;
+  //   }
+
+  //   this.setState({
+  //     showModal: true,
+
+  //     largeSrc: e.target.dataset.largeImage,
+  //   });
+  // };
+
+  showModal = event => {
+    const { datalarge } = event.target.attributes;
+
+    this.setState({
+      showModal: true,
+      largeSrc: datalarge.value,
+    });
+  };
+
+  closeModal = e => {
+    if (e.target === e.currentTarget || e.code === 'Escape') {
+      this.setState({
+        showModal: false,
+
+        largeSrc: '',
+      });
+    }
+  };
+
   render() {
     const {
       searchQuery,
@@ -110,13 +127,20 @@ class App extends Component {
         <ImageGallery
           images={this.state.imageArray}
           query={this.state.searchQuery}
+          onClick={this.showModal}
         />
         {showLoadMoreButton && <Button onClick={this.fetchImages} />}
+
+        {showModal && (
+          <Modal
+            largeSrc={largeSrc}
+            alt={searchQuery}
+            onClose={this.closeModal}
+          />
+        )}
       </>
     );
   }
 }
-
-// console.log(getImages);
 
 export default App;
