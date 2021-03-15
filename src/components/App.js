@@ -2,7 +2,9 @@ import { Component } from 'react';
 
 import './App.css';
 
-import axios from 'axios';
+// import axios from 'axios';
+
+import getImages from '../services/pixabayApi';
 
 import Searchbar from './Searchbar';
 import ImageGallery from './ImageGallery';
@@ -18,6 +20,7 @@ class App extends Component {
     loading: false,
     showModal: false,
     largeSrc: '',
+    error: false,
   };
 
   componentDidUpdate(prevProps, prevState) {
@@ -39,56 +42,27 @@ class App extends Component {
   };
 
   fetchImages = () => {
-    const API_KEY = '19772171-226cd242ef8307a66747d7d05';
-    const { page, searchQuery } = this.state;
-    axios.defaults.baseURL = 'https://pixabay.com/api';
+    const { searchQuery, page } = this.state;
+    const q = searchQuery;
+    const options = { q, page };
+    this.setState(prevState => ({
+      page: prevState.page + 1,
+      loading: true,
+    }));
 
-    this.setState({ loading: true });
-
-    axios
-      .get(
-        `/?q=${searchQuery}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`,
-      )
-      .then(response => {
-        this.setState(prevState => ({
-          imageArray: [...prevState.imageArray, ...response.data.hits],
-          page: prevState.page + 1,
-        }));
+    getImages(options)
+      .then(imageArray => {
+        if (imageArray.length > 0) {
+          this.setState(prevState => ({
+            imageArray: [...prevState.imageArray, ...imageArray],
+          }));
+        } else {
+          this.setState({ error: true });
+        }
       })
-      .catch(error => this.setState({ error }))
+      .catch(() => this.setState({ error: true }))
       .finally(() => this.setState({ loading: false }));
   };
-
-  // fetchImages = () => {
-  //   this.setState = { loading: true };
-
-  //   const API_KEY = '19772171-226cd242ef8307a66747d7d05';
-  //   const { searchQuery, page } = this.state;
-
-  //   axios.defaults.baseURL = 'https://pixabay.com/api';
-  //   axios
-  //     .get(
-  //       `/?q=${searchQuery}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`,
-  //     )
-  //     .then(response => {
-  //       this.setState({ imageArray: response.data.hits });
-  //     });
-  // };
-
-  onClick = () => {};
-
-  // showModal = e => {
-  //   console.log(e.target.attributes);
-  //   if (e.target.nodeName !== 'IMG') {
-  //     return;
-  //   }
-
-  //   this.setState({
-  //     showModal: true,
-
-  //     largeSrc: e.target.dataset.largeImage,
-  //   });
-  // };
 
   showModal = event => {
     const { datalarge } = event.target.attributes;
@@ -116,6 +90,7 @@ class App extends Component {
       loading,
       showModal,
       largeSrc,
+      error,
     } = this.state;
 
     const showLoadMoreButton = imageArray.length > 0 && !loading;
@@ -123,6 +98,11 @@ class App extends Component {
     return (
       <>
         <Searchbar onSubmit={this.updateQuery} />
+        {error && (
+          <h1 className="error">
+            Search result '{searchQuery}' not found! ¯\_(ツ)_/¯
+          </h1>
+        )}
         {loading && <LoaderSpinner />}
         <ImageGallery
           images={this.state.imageArray}

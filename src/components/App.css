@@ -232,3 +232,9 @@ img {
   width: 60px;
   margin: 20px auto;
 }
+
+.error {
+  display: block;
+  text-align: center;
+  color: crimson;
+}
